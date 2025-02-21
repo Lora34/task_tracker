@@ -1,24 +1,27 @@
-from asyncio import tasks
-from typing import Annotated
 from fastapi import APIRouter, Depends
+
 from repository import TaskRepository
-from schemas import STask, STaskAdd
+from schemas import STask, STaskAdd, STaskId
+
 
 router = APIRouter(
-    prefix = "/tasks",
-    tags = ["Таски"],
+    prefix="/tasks",
+    tags=["Таски"],
 )
 
-@router.post("")
-async def add_task(
-    task: Annotated[STaskAdd, Depends()]
-):
-    task_id = await TaskRepository.add_one(task)
-    return {"ok": True}
-        #,"task_id" = task_id
+
+@router.post(
+        "/",
+        description="Добавляет таску в базу данных, а еще ....",
+        summary="Добавляет таску в базу данных",
+        response_description="Вот такой ответ придет",
+)
+async def add_task(task: STaskAdd = Depends()) -> STaskId:
+    new_task_id = await TaskRepository.add_task(task)
+    return {"id": new_task_id}
 
 
-@router.get("")
+@router.get("/")
 async def get_tasks() -> list[STask]:
-    task_id = await TaskRepository.find_all()
-    return {"data": task_id}
+    tasks = await TaskRepository.get_tasks()
+    return tasks
